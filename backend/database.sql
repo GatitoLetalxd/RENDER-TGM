@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS Usuario (
   contraseña VARCHAR(255) NOT NULL,
   rol ENUM('usuario', 'admin', 'superadmin') DEFAULT 'usuario',
   foto_perfil VARCHAR(255),
-  fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  reset_token VARCHAR(255),
+  reset_token_expires DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS Imagenes (

@@ -619,17 +619,17 @@ const Home = () => {
               {
                 icon: <EmailIcon sx={{ fontSize: 30, color: '#2196f3' }} />,
                 title: 'Email',
-                content: 'info@render-tgm.com'
+                content: 'rmontufarm@unamad.edu.pe'
               },
               {
                 icon: <PhoneIcon sx={{ fontSize: 30, color: '#2196f3' }} />,
                 title: 'Teléfono',
-                content: '+1 234 567 890'
+                content: '983126035'
               },
               {
                 icon: <LocationOnIcon sx={{ fontSize: 30, color: '#2196f3' }} />,
                 title: 'Ubicación',
-                content: 'Ciudad de México, México'
+                content: 'Madre de Dios, Perú'
               }
             ].map((contact, index) => (
               <Grid item xs={12} sm={4} key={index}>

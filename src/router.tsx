@@ -5,6 +5,8 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import MyImages from './pages/MyImages';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Función para verificar autenticación
 const requireAuth = () => {
@@ -27,6 +29,14 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <Register />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/reset-password/:token',
+    element: <ResetPassword />,
   },
   {
     path: '/profile',

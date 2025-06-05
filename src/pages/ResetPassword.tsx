@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -12,19 +12,18 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { motion } from 'framer-motion';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import api from '../config/api';
 
 const validationSchema = Yup.object({
-  correo: Yup.string()
-    .email('Ingresa un correo electrónico válido')
-    .required('El correo es requerido'),
   contraseña: Yup.string()
     .min(6, 'La contraseña debe tener al menos 6 caracteres')
     .required('La contraseña es requerida'),
+  confirmarContraseña: Yup.string()
+    .oneOf([Yup.ref('contraseña')], 'Las contraseñas no coinciden')
+    .required('Confirma tu contraseña'),
 });
 
 // Componente para las figuras de fondo
@@ -79,29 +78,99 @@ const BackgroundShapes = () => (
   </>
 );
 
-const Login = () => {
+const ResetPassword = () => {
   const navigate = useNavigate();
+  const { token } = useParams();
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const formik = useFormik({
     initialValues: {
-      correo: '',
       contraseña: '',
+      confirmarContraseña: '',
     },
     validationSchema,
     onSubmit: async (values) => {
       try {
         setError('');
-        const response = await api.post('/auth/login', values);
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        navigate('/dashboard');
+        await api.post('/auth/reset-password', {
+          token,
+          contraseña: values.contraseña,
+        });
+        setSuccess(true);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Error al iniciar sesión');
+        setError(err.response?.data?.message || 'Error al restablecer la contraseña');
       }
     },
   });
+
+  if (success) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          width: '100vw',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(to bottom right, #0a1929 0%, #132f4c 100%)',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
+        <BackgroundShapes />
+        
+        <Container component="main" maxWidth="xs" sx={{ position: 'relative', zIndex: 1 }}>
+          <Paper
+            elevation={6}
+            sx={{
+              p: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: 2,
+            }}
+          >
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                color: 'white',
+                textAlign: 'center',
+                mb: 3
+              }}
+            >
+              ¡Contraseña restablecida!
+            </Typography>
+            <Typography 
+              sx={{ 
+                color: 'rgba(255, 255, 255, 0.7)',
+                textAlign: 'center',
+                mb: 3
+              }}
+            >
+              Tu contraseña ha sido actualizada correctamente.
+            </Typography>
+            <Button
+              onClick={() => navigate('/login')}
+              variant="contained"
+              sx={{
+                mt: 2,
+                background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
+                color: 'white',
+              }}
+            >
+              Ir al inicio de sesión
+            </Button>
+          </Paper>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -137,27 +206,6 @@ const Login = () => {
               borderRadius: 2,
             }}
           >
-            <motion.div
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Box
-                sx={{
-                  width: 45,
-                  height: 45,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2,
-                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
-                }}
-              >
-                <LockOutlinedIcon sx={{ color: 'white' }} />
-              </Box>
-            </motion.div>
-
             <Typography 
               component="h1" 
               variant="h4" 
@@ -168,7 +216,17 @@ const Login = () => {
                 fontWeight: 500
               }}
             >
-              Iniciar Sesión
+              Restablecer Contraseña
+            </Typography>
+
+            <Typography 
+              sx={{ 
+                mb: 3,
+                color: 'rgba(255, 255, 255, 0.7)',
+                textAlign: 'center'
+              }}
+            >
+              Ingresa tu nueva contraseña.
             </Typography>
             
             {error && (
@@ -203,47 +261,10 @@ const Login = () => {
               <TextField
                 margin="normal"
                 fullWidth
-                id="correo"
-                name="correo"
-                label="Correo Electrónico"
-                autoComplete="email"
-                autoFocus
-                value={formik.values.correo}
-                onChange={formik.handleChange}
-                error={formik.touched.correo && Boolean(formik.errors.correo)}
-                helperText={formik.touched.correo && formik.errors.correo}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.23)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#2196f3',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                  },
-                  '& .MuiInputBase-input': {
-                    color: 'white',
-                  },
-                  '& .MuiFormHelperText-root': {
-                    color: '#ff5252',
-                  },
-                }}
-              />
-
-              <TextField
-                margin="normal"
-                fullWidth
                 id="contraseña"
                 name="contraseña"
-                label="Contraseña"
+                label="Nueva contraseña"
                 type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
                 value={formik.values.contraseña}
                 onChange={formik.handleChange}
                 error={formik.touched.contraseña && Boolean(formik.errors.contraseña)}
@@ -263,22 +284,53 @@ const Login = () => {
                   ),
                 }}
                 sx={{
+                  '& label': { color: 'rgba(255, 255, 255, 0.7)' },
+                  '& label.Mui-focused': { color: '#2196f3' },
                   '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.23)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#2196f3',
-                    },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                  },
-                  '& .MuiInputBase-input': {
                     color: 'white',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                    '&.Mui-focused fieldset': { borderColor: '#2196f3' },
+                  },
+                  '& .MuiFormHelperText-root': {
+                    color: '#ff5252',
+                  },
+                }}
+              />
+
+              <TextField
+                margin="normal"
+                fullWidth
+                id="confirmarContraseña"
+                name="confirmarContraseña"
+                label="Confirmar contraseña"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={formik.values.confirmarContraseña}
+                onChange={formik.handleChange}
+                error={formik.touched.confirmarContraseña && Boolean(formik.errors.confirmarContraseña)}
+                helperText={formik.touched.confirmarContraseña && formik.errors.confirmarContraseña}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        edge="end"
+                        sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& label': { color: 'rgba(255, 255, 255, 0.7)' },
+                  '& label.Mui-focused': { color: '#2196f3' },
+                  '& .MuiOutlinedInput-root': {
+                    color: 'white',
+                    '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.23)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                    '&.Mui-focused fieldset': { borderColor: '#2196f3' },
                   },
                   '& .MuiFormHelperText-root': {
                     color: '#ff5252',
@@ -287,54 +339,20 @@ const Login = () => {
               />
 
               <Button
-                component={motion.button}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 type="submit"
                 fullWidth
                 variant="contained"
                 sx={{
                   mt: 3,
                   mb: 2,
-                  py: 1.5,
                   background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
                   color: 'white',
-                  textTransform: 'none',
-                  fontSize: '1.1rem',
-                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
-                }}
-              >
-                Iniciar Sesión
-              </Button>
-
-              <Button
-                component={Link}
-                to="/forgot-password"
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  textDecoration: 'none',
                   '&:hover': {
-                    color: '#2196f3',
-                  },
-                  mb: 1,
-                }}
-              >
-                ¿Olvidaste tu contraseña?
-              </Button>
-
-              <Button
-                component={Link}
-                to="/register"
-                fullWidth
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  textDecoration: 'none',
-                  '&:hover': {
-                    color: '#2196f3',
+                    background: 'linear-gradient(45deg, #1976d2 30%, #1cb5e0 90%)',
                   },
                 }}
               >
-                ¿No tienes una cuenta? Regístrate
+                Restablecer Contraseña
               </Button>
             </Box>
           </Paper>
@@ -344,4 +362,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default ResetPassword; 
