@@ -3,8 +3,9 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const getProfile = async (req, res) => {
+  const connection = await pool().getConnection();
   try {
-    const [users] = await pool.execute(
+    const [users] = await connection.execute(
       'SELECT id_usuario, nombre, correo, rol, foto_perfil, fecha_registro FROM Usuario WHERE id_usuario = ?',
       [req.user.userId]
     );
@@ -25,15 +26,18 @@ const getProfile = async (req, res) => {
   } catch (error) {
     console.error('Error al obtener perfil:', error);
     res.status(500).json({ message: 'Error al obtener datos del perfil' });
+  } finally {
+    connection.release();
   }
 };
 
 const updateProfile = async (req, res) => {
+  const connection = await pool().getConnection();
   try {
     const { nombre, correo } = req.body;
     
     // Verificar si el correo ya está en uso por otro usuario
-    const [existingUsers] = await pool.execute(
+    const [existingUsers] = await connection.execute(
       'SELECT id_usuario FROM Usuario WHERE correo = ? AND id_usuario != ?',
       [correo, req.user.userId]
     );
@@ -42,7 +46,7 @@ const updateProfile = async (req, res) => {
       return res.status(400).json({ message: 'El correo ya está en uso' });
     }
 
-    await pool.execute(
+    await connection.execute(
       'UPDATE Usuario SET nombre = ?, correo = ? WHERE id_usuario = ?',
       [nombre, correo, req.user.userId]
     );
@@ -51,10 +55,13 @@ const updateProfile = async (req, res) => {
   } catch (error) {
     console.error('Error al actualizar perfil:', error);
     res.status(500).json({ message: 'Error al actualizar el perfil' });
+  } finally {
+    connection.release();
   }
 };
 
 const updateProfilePhoto = async (req, res) => {
+  const connection = await pool().getConnection();
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No se ha subido ninguna imagen' });
@@ -64,13 +71,13 @@ const updateProfilePhoto = async (req, res) => {
     const fileName = req.file.filename;
     
     // Obtener la foto anterior para borrarla
-    const [users] = await pool.execute(
+    const [users] = await connection.execute(
       'SELECT foto_perfil FROM Usuario WHERE id_usuario = ?',
       [req.user.userId]
     );
 
     // Actualizar la foto en la base de datos
-    await pool.execute(
+    await connection.execute(
       'UPDATE Usuario SET foto_perfil = ? WHERE id_usuario = ?',
       [fileName, req.user.userId]
     );
@@ -78,7 +85,7 @@ const updateProfilePhoto = async (req, res) => {
     // Si había una foto anterior, intentar borrarla
     if (users[0]?.foto_perfil) {
       try {
-        const oldPhotoPath = path.join(__dirname, '../../uploads/profile', users[0].foto_perfil);
+        const oldPhotoPath = path.join(__dirname, '../uploads/profile', users[0].foto_perfil);
         await fs.access(oldPhotoPath);
         await fs.unlink(oldPhotoPath);
       } catch (err) {
@@ -97,26 +104,15 @@ const updateProfilePhoto = async (req, res) => {
       message: 'Error al actualizar la foto de perfil',
       error: error.message 
     });
-  }
-};
-
-const getUserImages = async (req, res) => {
-  try {
-    const [images] = await pool.execute(
-      'SELECT * FROM Imagenes WHERE usuario_id = ? ORDER BY fecha_subida DESC',
-      [req.user.userId]
-    );
-
-    res.json(images);
-  } catch (error) {
-    console.error('Error al obtener imágenes:', error);
-    res.status(500).json({ message: 'Error al obtener las imágenes' });
+  } finally {
+    connection.release();
   }
 };
 
 const getAllUsers = async (req, res) => {
+  const connection = await pool().getConnection();
   try {
-    const [users] = await pool.execute(
+    const [users] = await connection.execute(
       'SELECT id_usuario, nombre, correo, rol, fecha_registro FROM Usuario ORDER BY fecha_registro DESC'
     );
 
@@ -124,6 +120,8 @@ const getAllUsers = async (req, res) => {
   } catch (error) {
     console.error('Error al obtener lista de usuarios:', error);
     res.status(500).json({ message: 'Error al obtener la lista de usuarios' });
+  } finally {
+    connection.release();
   }
 };
 
@@ -131,6 +129,5 @@ module.exports = {
   getProfile,
   updateProfile,
   updateProfilePhoto,
-  getUserImages,
   getAllUsers
 }; 

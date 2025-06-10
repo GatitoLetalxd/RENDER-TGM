@@ -22,6 +22,7 @@ out/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
 # Editor directories and files
 .idea/
@@ -44,3 +45,29 @@ Thumbs.db
 # Large files
 Proyecto-web2.zip
 *.zip
+
+# Project specific
+# Test files and assets
+test_images/
+backend/test_assets/
+*.mwb
+
+# Uploads and temporary files
+backend/src/uploads/temp/
+backend/uploads/temp/
+
+# Python cache and ML models (if not tracked)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+backend/src/ml/__pycache__/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Cleanup artifacts
+cleanup.md

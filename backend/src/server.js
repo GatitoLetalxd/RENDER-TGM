@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -7,6 +8,7 @@ const userRoutes = require('./routes/userRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const adminRequestRoutes = require('./routes/adminRequestRoutes');
+const passwordResetRoutes = require('./routes/passwordReset.routes');
 const { testConnection } = require('./config/database');
 
 const app = express();
@@ -24,7 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rutas
 app.use('/api/auth', authRoutes);
@@ -32,6 +34,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/admin', adminRequestRoutes);
+app.use('/api/password', passwordResetRoutes);
 
 // Ruta de prueba
 app.get('/api/test', (req, res) => {
@@ -55,31 +58,15 @@ app.use((req, res) => {
 // Iniciar el servidor y probar la conexión a la base de datos
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
-  try {
-    // Crear directorios necesarios si no existen
-    const dirs = [
-      path.join(__dirname, '../uploads/images'),
-      path.join(__dirname, '../uploads/profile'),
-      path.join(__dirname, '../uploads/results')
-    ];
-    
-    dirs.forEach(dir => {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-    });
-
-    // Probar la conexión a la base de datos antes de iniciar el servidor
-    await testConnection();
-    
-    app.listen(PORT, "0.0.0.0" , () => {
+// Probar la conexión a la base de datos antes de iniciar el servidor
+testConnection()
+  .then(() => {
+    app.listen(PORT, () => {
       console.log(`Servidor corriendo en el puerto ${PORT}`);
+      console.log(`URL del servidor: http://localhost:${PORT}`);
     });
-  } catch (error) {
-    console.error('Error al iniciar el servidor:', error.message);
+  })
+  .catch(error => {
+    console.error('Error al conectar con la base de datos:', error);
     process.exit(1);
-  }
-};
-
-startServer(); 
+  }); 

@@ -303,11 +303,22 @@ const Profile = () => {
 
   const handleAdminRequest = async () => {
     try {
-      await api.post('/admin/request', { reason: adminRequestReason });
+      if (!adminRequestReason.trim()) {
+        setError('Por favor, ingresa una razón para tu solicitud');
+        return;
+      }
+
+      if (adminRequestReason.trim().length < 10) {
+        setError('La razón debe tener al menos 10 caracteres');
+        return;
+      }
+      
+      await api.post('/admin/request', { reason: adminRequestReason.trim() });
       setSuccess('Solicitud enviada correctamente');
       setOpenAdminRequest(false);
       setAdminRequestReason('');
     } catch (error: any) {
+      console.error('Error al enviar solicitud:', error);
       setError(error.response?.data?.message || 'Error al enviar la solicitud');
     }
   };
@@ -1869,6 +1880,14 @@ const Profile = () => {
             value={adminRequestReason}
             onChange={(e) => setAdminRequestReason(e.target.value)}
             placeholder="Explica por qué necesitas permisos de administrador..."
+            error={adminRequestReason.trim().length > 0 && adminRequestReason.trim().length < 10}
+            helperText={
+              adminRequestReason.trim().length === 0
+                ? 'Este campo es requerido'
+                : adminRequestReason.trim().length < 10
+                ? 'La razón debe tener al menos 10 caracteres'
+                : 'Explica detalladamente por qué necesitas permisos de administrador'
+            }
             sx={{ mt: 2 }}
           />
         </DialogContent>
@@ -1879,7 +1898,7 @@ const Profile = () => {
           <Button
             onClick={handleAdminRequest}
             variant="contained"
-            disabled={!adminRequestReason.trim()}
+            disabled={!adminRequestReason.trim() || adminRequestReason.trim().length < 10}
             sx={{
               background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
             }}

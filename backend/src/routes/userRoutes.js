@@ -11,7 +11,7 @@ const fs = require('fs');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Asegurarse de que el directorio existe
-    const uploadDir = path.join(__dirname, '../../uploads/profile');
+    const uploadDir = path.join(__dirname, '../uploads/profile');
     fs.mkdir(uploadDir, { recursive: true }, (err) => {
       if (err) {
         console.error('Error al crear directorio:', err);
@@ -45,7 +45,6 @@ const upload = multer({
 // Rutas protegidas - requieren autenticación
 router.get('/profile', authenticateToken, (req, res) => UserController.getProfile(req, res));
 router.put('/profile', authenticateToken, (req, res) => UserController.updateProfile(req, res));
-router.get('/images', authenticateToken, (req, res) => UserController.getUserImages(req, res));
 router.get('/list', authenticateToken, (req, res) => UserController.getAllUsers(req, res));
 router.post('/profile/photo', authenticateToken, upload.single('photo'), (req, res) => UserController.updateProfilePhoto(req, res));
 

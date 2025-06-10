@@ -212,6 +212,10 @@ const Dashboard = () => {
               <PersonIcon sx={{ mr: 1, color: '#2196f3' }} />
               Mi Perfil
             </MenuItem>
+            <MenuItem onClick={() => navigate('/my-images')}>
+              <ImageIcon sx={{ mr: 1, color: '#2196f3' }} />
+              Mis Imágenes
+            </MenuItem>
             <MenuItem onClick={handleLogout}>
               <LogoutIcon sx={{ mr: 1, color: '#ff5252' }} />
               Cerrar Sesión
@@ -272,8 +276,9 @@ const Dashboard = () => {
                         background: 'rgba(33, 150, 243, 0.1)',
                       },
                     }}
+                    onClick={() => navigate('/my-images')}
                   >
-                    <CloudUploadIcon 
+                    <ImageIcon 
                       sx={{ 
                         fontSize: 64, 
                         color: '#2196f3',
@@ -285,7 +290,7 @@ const Dashboard = () => {
                       gutterBottom
                       sx={{ color: 'white' }}
                     >
-                      Arrastra y suelta archivos aquí
+                      Gestionar Mis Imágenes
                     </Typography>
                     <Typography 
                       variant="body1" 
@@ -294,7 +299,7 @@ const Dashboard = () => {
                         mb: 2,
                       }}
                     >
-                      o
+                      Sube, visualiza y administra tus imágenes
                     </Typography>
                     <Button
                       component={motion.button}
@@ -311,13 +316,7 @@ const Dashboard = () => {
                         boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
                       }}
                     >
-                      Seleccionar Archivos
-                      <input
-                        type="file"
-                        hidden
-                        multiple
-                        accept="image/*,video/*"
-                      />
+                      Ir a Mis Imágenes
                     </Button>
                   </Box>
                 </motion.div>
@@ -334,16 +333,21 @@ const Dashboard = () => {
                       backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       borderRadius: 2,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        background: 'rgba(255, 255, 255, 0.1)',
+                      },
                     }}
+                    onClick={() => navigate('/my-images')}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <ImageIcon sx={{ color: '#2196f3', mr: 1 }} />
                       <Typography variant="h6" sx={{ color: 'white' }}>
-                        Imágenes Procesadas
+                        Mis Imágenes
                       </Typography>
                     </Box>
                     <Typography variant="h4" sx={{ color: '#2196f3' }}>
-                      0
+                      Ver Todas
                     </Typography>
                   </Paper>
                 </Grid>

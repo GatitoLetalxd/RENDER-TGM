@@ -16,41 +16,68 @@ const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  // Agregando timeout más largo para conexiones lentas
-  connectTimeout: 30000,
-  // Configuración SSL (comentada por defecto)
-  // ssl: {
-  //   rejectUnauthorized: false
-  // }
+  connectTimeout: 60000 // 60 segundos
 };
 
-console.log('Configuración de la base de datos:', {
+console.log('Intentando conectar a la base de datos con la siguiente configuración:', {
   host: dbConfig.host,
   user: dbConfig.user,
   database: dbConfig.database,
-  // No mostramos la contraseña por seguridad
+  port: dbConfig.port
 });
 
-// Crear pool de conexiones
-const pool = mysql.createPool(dbConfig);
+// Crear pool de conexiones con reintentos
+const createPoolWithRetry = async (retries = 5, delay = 5000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const pool = mysql.createPool(dbConfig);
+      // Probar la conexión
+      await pool.getConnection();
+      console.log('Conexión a la base de datos establecida correctamente');
+      return pool;
+    } catch (error) {
+      console.error(`Intento ${i + 1}/${retries} fallido:`, error.message);
+      if (i < retries - 1) {
+        console.log(`Reintentando en ${delay/1000} segundos...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+};
+
+let pool;
+
+// Inicializar el pool
+const initializePool = async () => {
+  try {
+    pool = await createPoolWithRetry();
+  } catch (error) {
+    console.error('Error fatal al conectar con la base de datos después de todos los reintentos');
+    throw error;
+  }
+};
 
 // Función para probar la conexión
 const testConnection = async () => {
+  if (!pool) {
+    await initializePool();
+  }
+  
   try {
     const connection = await pool.getConnection();
-    console.log('Conexión a la base de datos establecida correctamente');
+    console.log('Conexión de prueba exitosa');
     
     // Verificar que la tabla Usuario existe
     const [tables] = await connection.query('SHOW TABLES LIKE "Usuario"');
     if (tables.length === 0) {
       console.warn('¡Advertencia! La tabla Usuario no existe');
     } else {
-      // Obtener la estructura de la tabla
       const [columns] = await connection.query('DESCRIBE Usuario');
       console.log('Estructura de la tabla Usuario:', columns.map(col => col.Field));
     }
@@ -58,56 +85,40 @@ const testConnection = async () => {
     connection.release();
     return true;
   } catch (error) {
-    console.error('Error al conectar con la base de datos:');
-    console.error('Mensaje:', error.message);
-    if (error.code) console.error('Código de error:', error.code);
-    if (error.errno) console.error('Número de error:', error.errno);
-    if (error.sqlState) console.error('Estado SQL:', error.sqlState);
-    if (error.sqlMessage) console.error('Mensaje SQL:', error.sqlMessage);
-    
-    // Sugerencias basadas en el código de error
-    switch (error.code) {
-      case 'ECONNREFUSED':
-        console.error('Sugerencia: El servidor de base de datos no está aceptando conexiones. Verifica que:');
-        console.error('1. La dirección IP y el puerto son correctos');
-        console.error('2. El servidor MySQL está en ejecución');
-        console.error('3. El firewall permite conexiones al puerto 3306');
-        break;
-      case 'ER_ACCESS_DENIED_ERROR':
-        console.error('Sugerencia: Credenciales incorrectas. Verifica:');
-        console.error('1. El nombre de usuario es correcto');
-        console.error('2. La contraseña es correcta');
-        console.error('3. El usuario tiene permisos para conectarse desde tu IP');
-        break;
-      case 'ER_BAD_DB_ERROR':
-        console.error('Sugerencia: La base de datos no existe. Verifica:');
-        console.error('1. El nombre de la base de datos es correcto');
-        console.error('2. La base de datos ha sido creada');
-        break;
+    console.error('Error al probar la conexión:', error.message);
+    throw error;
+  }
+};
+
+// Función para ejecutar queries con reintentos
+const executeQuery = async (query, params = [], retries = 3) => {
+  if (!pool) {
+    await initializePool();
+  }
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      const [results] = await pool.execute(query, params);
+      return results;
+    } catch (error) {
+      if (error.code === 'PROTOCOL_CONNECTION_LOST' && i < retries - 1) {
+        console.log('Conexión perdida, reintentando...');
+        await initializePool();
+        continue;
+      }
+      throw error;
     }
-    
-    throw error;
   }
 };
 
-// Función para ejecutar queries con manejo de errores
-const executeQuery = async (query, params = []) => {
-  try {
-    const [results] = await pool.execute(query, params);
-    return results;
-  } catch (error) {
-    console.error('Error al ejecutar query:', error.message);
-    throw error;
-  }
-};
-
-// Manejar errores de conexión a nivel de pool
-pool.on('error', (err) => {
-  console.error('Error inesperado en el pool de conexiones:', err);
+// Inicializar el pool inmediatamente
+initializePool().catch(error => {
+  console.error('Error al inicializar el pool:', error);
+  process.exit(1);
 });
 
 module.exports = {
-  pool,
+  pool: () => pool,
   testConnection,
   executeQuery
 }; 
