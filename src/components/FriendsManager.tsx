@@ -303,16 +303,72 @@ const FriendsManager = () => {
         onClose={() => setOpenSearch(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
+        sx={{
+          '& .MuiDialog-paper': {
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important',
             backdropFilter: 'blur(10px)',
             borderRadius: 2,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            color: 'white !important',
+          },
+          '& .MuiDialogTitle-root': {
+            color: 'white !important',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          },
+          '& .MuiDialogContent-root': {
+            color: 'white !important',
+            backgroundColor: 'transparent !important',
+          },
+          '& .MuiDialogActions-root': {
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            backgroundColor: 'transparent !important',
+          },
+          '& .MuiTextField-root': {
+            '& .MuiOutlinedInput-root': {
+              color: 'white !important',
+              backgroundColor: 'rgba(255, 255, 255, 0.05) !important',
+              '& fieldset': {
+                borderColor: 'rgba(255, 255, 255, 0.3) !important',
+              },
+              '&:hover fieldset': {
+                borderColor: 'rgba(255, 255, 255, 0.5) !important',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#2196f3 !important',
+              },
+              '& input': {
+                color: 'white !important',
+                '&::placeholder': {
+                  color: 'rgba(255, 255, 255, 0.7) !important',
+                },
+              },
+            },
+          },
+          '& .MuiList-root': {
+            backgroundColor: 'transparent !important',
+          },
+          '& .MuiListItem-root': {
+            backgroundColor: 'rgba(255, 255, 255, 0.05) !important',
+            borderRadius: 1,
+            marginBottom: 1,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          },
+        }}
+        PaperProps={{
+          sx: {
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: 2,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           },
         }}
       >
-        <DialogTitle>Buscar Usuarios</DialogTitle>
-        <DialogContent>
+        <DialogTitle style={{ color: 'white', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          Buscar Usuarios
+        </DialogTitle>
+        <DialogContent style={{ color: 'white', backgroundColor: 'transparent' }}>
           <Box sx={{ display: 'flex', gap: 1, mb: 2, mt: 1 }}>
             <TextField
               fullWidth
@@ -321,6 +377,27 @@ const FriendsManager = () => {
               placeholder="Buscar por nombre..."
               variant="outlined"
               size="small"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  color: 'white',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#2196f3',
+                  },
+                  '& input': {
+                    color: 'white',
+                    '&::placeholder': {
+                      color: 'rgba(255, 255, 255, 0.7)',
+                    },
+                  },
+                },
+              }}
             />
             <Button
               variant="contained"
@@ -328,6 +405,10 @@ const FriendsManager = () => {
               disabled={isLoading}
               sx={{
                 background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
+                color: 'white',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1976d2 30%, #1E88E5 90%)',
+                },
               }}
             >
               {isLoading ? <CircularProgress size={24} /> : <SearchIcon />}
@@ -338,6 +419,12 @@ const FriendsManager = () => {
             {searchResults.map((user) => (
               <ListItem
                 key={user.id_usuario}
+                sx={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: 1,
+                  marginBottom: 1,
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                }}
                 secondaryAction={
                   user.estado !== 'aceptado' && (
                     <Button
@@ -347,8 +434,12 @@ const FriendsManager = () => {
                       onClick={() => handleSendRequest(user.id_usuario)}
                       disabled={user.estado === 'pendiente'}
                       sx={{
-                        borderColor: user.estado === 'pendiente' ? 'grey.500' : '#2196f3',
-                        color: user.estado === 'pendiente' ? 'grey.500' : '#2196f3',
+                        borderColor: user.estado === 'pendiente' ? 'rgba(255, 255, 255, 0.3)' : '#2196f3',
+                        color: user.estado === 'pendiente' ? 'rgba(255, 255, 255, 0.5)' : '#2196f3',
+                        '&:hover': {
+                          borderColor: user.estado === 'pendiente' ? 'rgba(255, 255, 255, 0.3)' : '#1976d2',
+                          backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        },
                       }}
                     >
                       {user.estado === 'pendiente' ? 'Pendiente' : 'Agregar'}
@@ -361,13 +452,28 @@ const FriendsManager = () => {
                     {user.nombre[0]}
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={user.nombre} />
+                <ListItemText 
+                  primary={
+                    <Typography style={{ color: 'white' }}>
+                      {user.nombre}
+                    </Typography>
+                  }
+                />
               </ListItem>
             ))}
           </List>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenSearch(false)} color="inherit">
+        <DialogActions style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', backgroundColor: 'transparent' }}>
+          <Button 
+            onClick={() => setOpenSearch(false)} 
+            sx={{ 
+              color: 'rgba(255, 255, 255, 0.8)',
+              '&:hover': {
+                color: 'white',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+          >
             Cerrar
           </Button>
         </DialogActions>

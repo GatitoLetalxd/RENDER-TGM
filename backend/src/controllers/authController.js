@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
 const crypto = require('crypto');
+const transporter = require('../config/mail.config');
 
 const register = async (req, res) => {
   try {
@@ -184,7 +185,9 @@ const forgotPassword = async (req, res) => {
     );
 
     // Enviar correo con el enlace de restablecimiento
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    // Detectar la IP del servidor dinámicamente
+    const serverIP = req.get('host').split(':')[0];
+    const resetUrl = `http://${serverIP}:5173/reset-password/${resetToken}`;
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -221,12 +224,14 @@ const resetPassword = async (req, res) => {
       'SELECT id_usuario, reset_token, reset_token_expires FROM Usuario WHERE reset_token_expires > NOW()',
     );
 
-    const user = users.find(async (user) => {
-      if (user.reset_token) {
-        return await bcrypt.compare(token, user.reset_token);
+    // Buscar el usuario con el token correcto
+    let user = null;
+    for (const u of users) {
+      if (u.reset_token && await bcrypt.compare(token, u.reset_token)) {
+        user = u;
+        break;
       }
-      return false;
-    });
+    }
 
     if (!user) {
       return res.status(400).json({ message: 'Token inválido o expirado' });

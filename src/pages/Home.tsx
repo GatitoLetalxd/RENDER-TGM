@@ -11,20 +11,24 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 
-// Importa tus imágenes aquí
-// Ejemplo: import imagen1 from '../assets/images/imagen1.jpg';
+// Importar imágenes estáticamente para que Vite las procese correctamente
+import imagen1 from '../assets/images/imagen1.jpg';
+import imagen2 from '../assets/images/imagen2.jpg';
+import imagen3 from '../assets/images/imagen3.jpg';
+import imagen4 from '../assets/images/imagen4.jpg';
+import imagen5 from '../assets/images/imagen5.jpg';
+import imagen6 from '../assets/images/imagen6.jpg';
 
 const images = [
-  // Reemplaza estas URLs con las rutas de tus imágenes locales
-  '/src/assets/images/imagen1.jpg',
-  '/src/assets/images/imagen2.jpg',
-  '/src/assets/images/imagen3.jpg',
+  imagen1,
+  imagen2,
+  imagen3,
 ];
 
 const secondaryImages = [
-  '/src/assets/images/imagen4.jpg',
-  '/src/assets/images/imagen5.jpg',
-  '/src/assets/images/imagen6.jpg',
+  imagen4,
+  imagen5,
+  imagen6,
 ];
 
 // Componente para las figuras de fondo

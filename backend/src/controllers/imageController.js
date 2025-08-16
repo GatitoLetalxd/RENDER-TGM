@@ -16,13 +16,18 @@ const uploadImage = async (req, res) => {
     // Construir la ruta relativa para guardar en la base de datos
     const userId = req.user ? req.user.userId : null;
     const relativePath = `uploads/${userId}/${fileName}`;
+    
+    // Obtener la IP del servidor desde la request
+    const serverIP = req.get('host').split(':')[0];
+    
     // NO procesar ni guardar en processed al subir
     const [result] = await connection.execute(
       'INSERT INTO Imagen (nombre_archivo, ruta_archivo, id_usuario, fecha_subida) VALUES (?, ?, ?, NOW())',
       [fileName, relativePath, userId]
     );
-    // Al responder, construye la URL de la imagen
-    const imageUrl = `/${relativePath}`;
+    
+    // Construir la URL completa de la imagen
+    const imageUrl = `http://${serverIP}:5000/${relativePath}`;
 
     res.json({
       message: 'Imagen subida exitosamente',
@@ -112,7 +117,7 @@ const deleteImage = async (req, res) => {
     );
 
     // Eliminar los archivos físicos
-    const basePath = path.join(__dirname, '../..');
+    const basePath = path.join(__dirname, '..');
     const filesToDelete = [
       image.ruta_archivo ? path.join(basePath, image.ruta_archivo) : null,
       image.ruta_archivo_procesada ? path.join(basePath, image.ruta_archivo_procesada) : null
@@ -292,15 +297,18 @@ const getImages = async (req, res) => {
       [userId]
     );
     
+    // Obtener la IP del servidor desde la request
+    const serverIP = req.get('host').split(':')[0];
+    console.log('IP del servidor:', serverIP);
+    
     // Construir la URL de la imagen y la procesada
     const imagesWithUrls = images.map(image => {
-      const baseImageUrl = `/uploads/${userId}/${image.nombre_archivo}`;
-      let processedUrl = undefined;
+      // Construir URLs absolutas usando la IP del servidor
+      const baseImageUrl = `http://${serverIP}:5000/uploads/${userId}/${image.nombre_archivo}`;
+      let processedUrl = null;
       
       if (image.procesada && image.ruta_archivo_procesada) {
-        // Extraer solo el nombre del archivo procesado
-        const processedFileName = image.ruta_archivo_procesada.split('/').pop();
-        processedUrl = `/uploads/${userId}/processed/${processedFileName}`;
+        processedUrl = `http://${serverIP}:5000/uploads/${userId}/processed/${path.basename(image.ruta_archivo_procesada)}`;
       }
       
       return {

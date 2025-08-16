@@ -1864,14 +1864,61 @@ const Profile = () => {
         onClose={() => setOpenAdminRequest(false)}
         PaperProps={{
           sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
+            backgroundColor: '#1e1e1e !important',
+            color: '#ffffff !important',
             backdropFilter: 'blur(10px)',
             borderRadius: 2,
+            '& .MuiDialogTitle-root': {
+              color: '#ffffff !important',
+              backgroundColor: '#1e1e1e !important',
+            },
+            '& .MuiDialogContent-root': {
+              backgroundColor: '#1e1e1e !important',
+              color: '#ffffff !important',
+            },
+            '& .MuiDialogActions-root': {
+              backgroundColor: '#1e1e1e !important',
+              color: '#ffffff !important',
+            },
+            '& .MuiTextField-root': {
+              backgroundColor: '#2d2d2d !important',
+              '& .MuiInputBase-root': {
+                color: '#ffffff !important',
+                backgroundColor: '#2d2d2d !important',
+                '& .MuiInputLabel-root': {
+                  color: '#cccccc !important',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#666666 !important',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#888888 !important',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#2196f3 !important',
+                },
+              },
+              '& .MuiFormHelperText-root': {
+                color: '#cccccc !important',
+              },
+            },
           },
         }}
       >
-        <DialogTitle>Solicitar Rol de Administrador</DialogTitle>
-        <DialogContent>
+        <DialogTitle 
+          sx={{ 
+            color: '#ffffff !important',
+            backgroundColor: '#1e1e1e !important',
+          }}
+        >
+          Solicitar Rol de Administrador
+        </DialogTitle>
+        <DialogContent 
+          sx={{ 
+            backgroundColor: '#1e1e1e !important',
+            color: '#ffffff !important',
+          }}
+        >
           <TextField
             fullWidth
             multiline
@@ -1888,11 +1935,41 @@ const Profile = () => {
                 ? 'La razón debe tener al menos 10 caracteres'
                 : 'Explica detalladamente por qué necesitas permisos de administrador'
             }
-            sx={{ mt: 2 }}
+            sx={{ 
+              mt: 2,
+              '& .MuiInputBase-root': {
+                color: '#ffffff !important',
+                backgroundColor: '#2d2d2d !important',
+              },
+              '& .MuiInputLabel-root': {
+                color: '#cccccc !important',
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#666666 !important',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#888888 !important',
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#2196f3 !important',
+              },
+              '& .MuiFormHelperText-root': {
+                color: '#cccccc !important',
+              },
+            }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAdminRequest(false)} color="inherit">
+        <DialogActions 
+          sx={{ 
+            backgroundColor: '#1e1e1e !important',
+            color: '#ffffff !important',
+          }}
+        >
+          <Button 
+            onClick={() => setOpenAdminRequest(false)} 
+            color="inherit"
+            sx={{ color: '#ffffff !important' }}
+          >
             Cancelar
           </Button>
           <Button
@@ -1901,6 +1978,7 @@ const Profile = () => {
             disabled={!adminRequestReason.trim() || adminRequestReason.trim().length < 10}
             sx={{
               background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
+              color: '#ffffff !important',
             }}
           >
             Enviar solicitud

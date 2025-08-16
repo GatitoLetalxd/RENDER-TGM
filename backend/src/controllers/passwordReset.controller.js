@@ -36,7 +36,9 @@ const passwordResetController = {
       );
 
       // Enviar correo con el enlace de recuperación
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      // Detectar la IP del servidor dinámicamente
+      const serverIP = req.get('host').split(':')[0];
+      const resetLink = `http://${serverIP}:5173/reset-password/${resetToken}`;
       
       const mailOptions = {
         from: process.env.EMAIL_USER,

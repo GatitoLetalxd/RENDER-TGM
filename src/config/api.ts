@@ -1,6 +1,18 @@
 import axios from 'axios';
 
-export const SERVER_URL = 'http://localhost:5000';
+// Configuración robusta del servidor API
+const getServerUrl = () => {
+  // En desarrollo, usar localhost
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5000';
+  }
+  
+  // En producción, usar la IP pública que siempre funciona
+  // Esto evita problemas cuando se accede desde diferentes IPs
+  return 'http://100.73.162.98:5000';
+};
+
+export const SERVER_URL = getServerUrl();
 
 const api = axios.create({
   baseURL: `${SERVER_URL}/api`,

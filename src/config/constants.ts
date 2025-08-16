@@ -1,8 +1,26 @@
 // Constantes de configuración centralizadas para el frontend
 
-// URLs y endpoints
-export const API_BASE_URL = "http://localhost:5000";
-export const FRONTEND_URL = "http://localhost:5173";
+// URLs y endpoints - Detección dinámica de IP
+const getServerUrl = () => {
+  // En desarrollo, usar localhost
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5000';
+  }
+  // En producción, usar la IP desde donde se accede
+  return `http://${window.location.hostname}:5000`;
+};
+
+const getFrontendUrl = () => {
+  // En desarrollo, usar localhost
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5173';
+  }
+  // En producción, usar la IP desde donde se accede
+  return `http://${window.location.hostname}:5173`;
+};
+
+export const API_BASE_URL = getServerUrl();
+export const FRONTEND_URL = getFrontendUrl();
 
 // Configuración de archivos
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
